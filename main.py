@@ -1,13 +1,14 @@
 import socket
 import time
 
-# Replace with the IP address of your OBD-II device and its port (e.g., port 35000)
-OBD2_IP = "192.168.0.150"  # IP of the OBD-II device
-OBD2_PORT = 35000  # Common port for many Wi-Fi OBD-II devices
+# IP and port configuration
+OBD2_IP = "192.168.0.150"
+OBD2_PORT = 8080
 
 # Connect to the OBD-II device via TCP/IP
 def connect_to_obd2(ip, port):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.settimeout(5)  # Set timeout to avoid hanging indefinitely
     try:
         s.connect((ip, port))
         print(f"Connected to OBD-II sensor at {ip}:{port}")
@@ -16,10 +17,17 @@ def connect_to_obd2(ip, port):
         print(f"Failed to connect to {ip}:{port} - {e}")
         return None
 
+# Send initialization commands (if needed for your OBD-II model)
+def initialize_obd2(s):
+    init_commands = ["ATZ", "ATL0"]  # Resets and removes line feeds (optional commands)
+    for command in init_commands:
+        send_obd2_command(s, command)
+        time.sleep(0.1)  # Short delay between init commands
+
 # Send an OBD-II command (e.g., "010C" for RPM)
 def send_obd2_command(s, command):
     try:
-        s.sendall(command.encode())  # Send the command
+        s.sendall(f"{command}\r".encode())  # Send the command with carriage return
         response = s.recv(1024).decode()  # Read the response
         print(f"Response: {response}")
         return response
@@ -31,10 +39,11 @@ def send_obd2_command(s, command):
 obd2_connection = connect_to_obd2(OBD2_IP, OBD2_PORT)
 
 if obd2_connection:
-    time.sleep(1)  # Wait for a second to establish connection
+    initialize_obd2(obd2_connection)  # Send any initialization commands
     
     # Send OBD-II request (example: "010C" for RPM data)
     response = send_obd2_command(obd2_connection, "010C")
+    print("The response is: ", response)
     
     # Process the response
     if response:
