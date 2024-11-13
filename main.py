@@ -41,16 +41,19 @@ for port in open_ports:
     print(f"testing port: {port}")
     obd2_connection = connect_to_obd2(ip=OBD2_IP, port=port)
 
-    if obd2_connection:
-        initialize_obd2(obd2_connection)  # Send any initialization commands
-        
-        # Send OBD-II request (example: "010C" for RPM data)
-        response = send_obd2_command(obd2_connection, "010C")
-        print("The response is: ", response)
-        
-        # Process the response
-        if response:
-            print(f"Received RPM data: {response}")
-        
-        # Close the connection when done
-        obd2_connection.close()
+    try:
+        if obd2_connection:
+            initialize_obd2(obd2_connection)  # Send any initialization commands
+            
+            # Send OBD-II request (example: "010C" for RPM data)
+            response = send_obd2_command(obd2_connection, "010C")
+            print("The response is: ", response)
+            
+            # Process the response
+            if response:
+                print(f"Received RPM data: {response}")
+            
+            # Close the connection when done
+            obd2_connection.close()
+    except Exception:
+        print(f"exception on port {port}")
