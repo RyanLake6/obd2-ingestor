@@ -24,16 +24,17 @@ def getConnection():
     print("Available ports are: ", ports)
     
     if ports:
-        # Establish connection to the first valid port in the list
-        connection = obd.OBD(ports[0])  # connect to the first port in the list
-        if connection.is_open():
-            print(f"Successfully connected to {ports[0]}")
-            response = connection.query(obd.commands.RPM)
-            print(f"Response from obd rpm is {response}")
-            return True
-        else:
-            print(f"Failed to connect to {ports[0]}")
-            return False
+        for port in ports:
+            # Establish connection to the first valid port in the list
+            connection = obd.OBD(port)  # connect to the first port in the list
+            if connection.is_open():
+                print(f"Successfully connected to {port}")
+                response = connection.query(obd.commands.RPM)
+                print(f"Response from obd rpm is {response}")
+                return True
+            else:
+                print(f"Failed to connect to {port}")
+                return False
     else:
         print("No valid OBD-II ports found.")
         return False
