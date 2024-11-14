@@ -14,7 +14,7 @@ timeout = 5
 # Function to attempt OBD connection on a specific port
 def try_port(port):
     try:
-        connection = obd.OBD(f"192.168.0.150:{port}")
+        connection = obd.OBD("192.168.0.150", 135)
         if connection.is_connected():
             print(f"\033[32mSUCCESS on port {port}\033[0m")
             # Test an OBD command
