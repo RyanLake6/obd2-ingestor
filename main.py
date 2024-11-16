@@ -1,5 +1,6 @@
 import socket
 import time
+import obd
 
 # IP and port configuration
 OBD2_IP = "192.168.0.150"
