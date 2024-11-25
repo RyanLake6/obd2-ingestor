@@ -8,7 +8,7 @@ if connection.is_connected():
     # Send a simple command (engine RPM as an example)
     print("Sending request for Engine RPM...")
     cmd = obd.commands.RPM  # OBD-II command for RPM
-    response = connection.query(cmd)  # Query the command
+    response = connection.query(cmd, timeout=5)  # Query the command
 
     # Check and display response
     if response.is_successful():
