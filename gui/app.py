@@ -8,6 +8,8 @@ import random
 class DashClient:
     def __init__(self):
         self.app = None
+        self.x_data = []
+        self.y_data = []
     
     def create_app(self):
         self.app = dash.Dash(__name__)
@@ -39,12 +41,13 @@ class DashClient:
 
         def update_plot(n, x_data, y_data):
             # Simulate new data (e.g., from a sensor or real-time data source)
-            new_x = time.time()
-            new_y = random.randint(0, 100)
+            # new_x = time.time()
+            # new_y = random.randint(0, 100)
 
             # Append new data
-            x_data.append(new_x)
-            y_data.append(new_y)
+            if self.x_data and self.y_data:
+                x_data = self.x_data
+                y_data = self.y_data
 
             # Only keep the last 50 data points to avoid overcrowding the plot
             x_data = x_data[-50:]
@@ -64,6 +67,11 @@ class DashClient:
 
             return figure, x_data, y_data  # Return updated figure and data
 
+
+    def update_data(self, new_x, new_y):
+        """Method to update the plot data from outside the class"""
+        self.x_data.append(new_x)
+        self.y_data.append(new_y)
 
     def run_dash(self):
         self.app.run_server(debug=True)

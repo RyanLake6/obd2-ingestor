@@ -26,6 +26,7 @@ class OBD2Client:
         self.timeout = timeout
         self.connection = None
         self.debug = debug
+        self.connected = False
 
         # virtualize a serial connection from wifi
         if ip != "" and port != 0:
@@ -70,19 +71,21 @@ class OBD2Client:
             subprocess.run(chmod_command, check=True)
             print("Permissions updated successfully.")
 
-            # Optional: Read the socat output 
-            while True:
-                output = process.stdout.readline()
-                error = process.stderr.readline()
+            self.connected = True
 
-                if output:
-                    print(f"Socat STDOUT: {output.decode().strip()}")
-                if error:
-                    print(f"Socat STDERR: {error.decode().strip()}")
+            # # Optional: Read the socat output 
+            # while True:
+            #     output = process.stdout.readline()
+            #     error = process.stderr.readline()
+
+            #     if output:
+            #         print(f"Socat STDOUT: {output.decode().strip()}")
+            #     if error:
+            #         print(f"Socat STDERR: {error.decode().strip()}")
                 
-                # Check if socat has exited
-                if process.poll() is not None:
-                    break
+            #     # Check if socat has exited
+            #     if process.poll() is not None:
+            #         break
         except KeyboardInterrupt:
             print("Stopping socat process...")
             process.terminate()
@@ -99,11 +102,12 @@ class OBD2Client:
         connection = obd.OBD(self.serial_port, baudrate=self.baudrate)
         self.connection = connection
 
+
     def get_rpm(self) -> tuple[float, str] | None:
         """Gets the current RPM
 
         Returns:
-            obd.OBDResponse or None: The response object containing the RPM value, or None if no connection is available.
+            tuple[float, str] | None: rpm data tuple of the value and units or None, if nothing is connected or query failed
         """
         if not self.connection:
             print("No connection to OBD-II device.")
@@ -115,4 +119,22 @@ class OBD2Client:
             return response.value, response.unit
         else:
             print("Failed to get rpm or no data available")
+            return None
+        
+    def get_voltage(self) -> tuple[float, str] | None:
+        """Gets the current voltage
+
+        Returns:
+            tuple[float, str] | None: voltage data tuple of the value and units or None, if nothing is connected or query failed
+        """
+        if not self.connection:
+            print("No connection to OBD-II device.")
+            return None
+        cmd = obd.commands.ELM_VOLTAGE
+        response = self.connection.query(cmd)
+
+        if response and not response.is_null():
+            return response.value, response.unit
+        else:
+            print("Failed to get voltage or no data available")
             return None
