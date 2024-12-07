@@ -1,6 +1,7 @@
 import obd
 import subprocess
 import time
+import threading
 
 """
 Class to setup a obd connection to pull live sensor data over an OBD-II connection
@@ -28,8 +29,15 @@ class OBD2Client:
 
         # virtualize a serial connection from wifi
         if ip != "" and port != 0:
-            self.virtualize_connection()
+            self.virtualize_connection_thread()
 
+
+    def virtualize_connection_thread(self):
+        """calling virtualize_connection in another thread to not block the main process"""
+        print("Starting virtualize connection in a seperate thread")
+        thread = threading.Thread(target=self.virtualize_connection)
+        thread.start()
+        print("running virtualize connection in a another thread")
 
     def virtualize_connection(self):
         """Virtualizes a wifi connection to be serial"""
@@ -55,7 +63,7 @@ class OBD2Client:
 
         try:
             # Wait briefly to ensure the /dev/ttyUSB0 device is created
-            time.sleep(15)
+            time.sleep(3)
 
             # Run the chmod command while socat is running
             print("Running chmod command...")
@@ -91,7 +99,7 @@ class OBD2Client:
         connection = obd.OBD(self.serial_port, baudrate=self.baudrate)
         self.connection = connection
 
-    def get_rpm(self):
+    def get_rpm(self) -> tuple[float, str] | None:
         """Gets the current RPM
 
         Returns:
@@ -102,4 +110,9 @@ class OBD2Client:
             return None
         cmd = obd.commands.RPM
         response = self.connection.query(cmd)
-        return response
+
+        if response and not response.is_null():
+            return response.value, response.unit
+        else:
+            print("Failed to get rpm or no data available")
+            return None

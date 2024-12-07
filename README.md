@@ -15,6 +15,16 @@ python3 -m venv venv
 source venv/bin/activate
 ```
 
+### Allowing sudo commands
+The script needs access to run sudo commands if you are virtualizing a wifi connected OBD-II. Follow these steps if necessary:
+Run both of the following: `which chmod` and `which socat`
+Then `sudo visudo`
+and place the following line in the file:
+`<username> ALL=(ALL) NOPASSWD: <output-from-which-socat>, <output-from-which-chmod>`
+Example:
+`user ALL=(ALL) NOPASSWD: /usr/bin/socat, /usr/bin/chmod`
+
+
 ### Running the gui
 - Connect to the OBDII wifi
 - Run: `python3 main.py`
