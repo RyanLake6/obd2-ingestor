@@ -35,7 +35,7 @@ class OBD2Client:
     def virtualize_connection_thread(self):
         """calling virtualize_connection in another thread to not block the main process"""
         print("Starting virtualize connection in a seperate thread")
-        thread = threading.Thread(target=self.virtualize_connection)
+        thread = threading.Thread(target=self.virtualize_connection, daemon=True)
         thread.start()
         print("running virtualize connection in a another thread")
 
