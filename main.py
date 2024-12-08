@@ -47,16 +47,16 @@ def generate_external_data(dash_client, obd2client):
         dash_client (DashClient): dash client class for gui
     """
     while True:
-        rpm_data = client.get_rpm()
-        if rpm_data:
-            rpm_value, rpm_unit = rpm_data
-            print(f"Current RPM: {rpm_value} {rpm_unit}")
+        voltage_data = client.get_voltage()
+        if voltage_data:
+            voltage_value, voltage_unit = voltage_data
+            print(f"Current RPM: {voltage_value} {voltage_unit}")
             new_x = time.time()
-            new_y = rpm_value
+            new_y = voltage_value
             dash_client.update_data(new_x, new_y)
         else:
             print("no rpm data returned")
-        time.sleep(1)
+        time.sleep(3)
 
 
 if __name__ == '__main__':
