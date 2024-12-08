@@ -4,6 +4,7 @@ import time
 
 from obdii.obdii_client import OBD2Client
 from gui.app import DashClient 
+from pint import UnitRegistry
 
 
 def mock_generate_external_data_thread(dash_client):
@@ -47,12 +48,13 @@ def generate_external_data(dash_client, obd2client):
         dash_client (DashClient): dash client class for gui
     """
     while True:
-        voltage_data = client.get_voltage()
-        if voltage_data:
-            voltage_value, voltage_unit = voltage_data
-            print(f"Current RPM: {voltage_value} {voltage_unit}")
+        rpm_data = obd2client.get_rpm()
+        if rpm_data:
+            rpm_value, rpm_unit = rpm_data
+            print(f"Current rpm: {rpm_value.magnitude} and value: {rpm_unit}")
+            print(f"the type of hte rpm value is: {type(rpm_value)}")
             new_x = time.time()
-            new_y = voltage_value
+            new_y = rpm_value.magnitude
             dash_client.update_data(new_x, new_y)
         else:
             print("no rpm data returned")
