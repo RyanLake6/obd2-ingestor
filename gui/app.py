@@ -1,99 +1,49 @@
-import dash
-from dash import dcc, html
-from dash.dependencies import Input, Output, State
-import plotly.graph_objs as go
-import time
-import random
-
-class DashClient:
-    def __init__(self):
-        self.app = None
-        self.x_data = []
-        self.y_data = []
-    
-    def create_app(self):
-        self.app = dash.Dash(__name__)
-
-        # Define the layout of the app
-        self.app.layout = html.Div(
-            children=[
-                html.H1("Real-Time Plotly Update Example"),
-                dcc.Graph(id="live-update-graph"),
-                dcc.Store(id="x_data_store", data=[]),  # Store for x_data
-                dcc.Store(id="y_data_store", data=[]),  # Store for y_data
-                dcc.Interval(
-                    id="interval-component",
-                    interval=1000,  # Update every 1000 ms (1 second)
-                    n_intervals=0
-                ),
-            ]
-        )
-
-        # Define callback to update the plot and store data
-        @self.app.callback(
-            Output("live-update-graph", "figure"),
-            Output("x_data_store", "data"),  # Output updated x_data
-            Output("y_data_store", "data"),  # Output updated y_data
-            Input("interval-component", "n_intervals"),
-            State("x_data_store", "data"),  # Get the current stored x_data
-            State("y_data_store", "data"),  # Get the current stored y_data
-        )
-
-        def update_plot(n, x_data, y_data):
-            # Simulate new data (e.g., from a sensor or real-time data source)
-            # new_x = time.time()
-            # new_y = random.randint(0, 100)
-
-            # Append new data
-            if self.x_data and self.y_data:
-                x_data = self.x_data
-                y_data = self.y_data
-
-            # Only keep the last 50 data points to avoid overcrowding the plot
-            x_data = x_data[-50:]
-            y_data = y_data[-50:]
-
-            # Create the plot
-            figure = {
-                "data": [go.Scatter(x=x_data, y=y_data, mode="lines+markers")],
-                "layout": go.Layout(
-                    title="Live Data Update",
-                    xaxis={"title": "Time", "rangeslider": {"visible": True}},
-                    yaxis={"title": "Value"},
-                    plot_bgcolor='#121212',  # Set the plot background to dark
-                    paper_bgcolor='#121212',
-                ),
-            }
-
-            return figure, x_data, y_data  # Return updated figure and data
+import sys
+import numpy as np
+import pyqtgraph as pg
+from PyQt5.QtWidgets import QApplication, QMainWindow
+from obdii.obdii_client import OBD2Client
 
 
-    def update_data(self, new_x, new_y):
-        """Method to update the plot data from outside the class"""
-        self.x_data.append(new_x)
-        self.y_data.append(new_y)
+class PyQtClient(QMainWindow):
+    def __init__(self, obd2Client: OBD2Client, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("OBD-II Telemetry")
+        self.resize(800, 600)
 
-    def run_dash(self):
-        self.app.run_server(debug=True)
+        # Create a central GraphicsLayoutWidget for multiple plots
+        self.central_widget = pg.GraphicsLayoutWidget()
+        self.setCentralWidget(self.central_widget)
 
+        # Add multiple plots to the layout
+        self.plot1 = self.central_widget.addPlot(title="RPM")
+        self.curve1 = self.plot1.plot(pen=pg.mkPen(color='y', width=2))
 
-# # Create a Dash app
-# app = dash.Dash(__name__)
+        self.central_widget.nextRow()  # Move to the next row in the layout
+        self.plot2 = self.central_widget.addPlot(title="Plot 2: Sine Wave")
+        self.curve2 = self.plot2.plot(pen=pg.mkPen(color='r', width=2))
 
-# # Define the layout of the app
-# app.layout = html.Div(
-#     children=[
-#         html.H1("Real-Time Plotly Update Example"),
-#         dcc.Graph(id="live-update-graph"),
-#         dcc.Store(id="x_data_store", data=[]),  # Store for x_data
-#         dcc.Store(id="y_data_store", data=[]),  # Store for y_data
-#         dcc.Interval(
-#             id="interval-component",
-#             interval=1000,  # Update every 1000 ms (1 second)
-#             n_intervals=0
-#         ),
-#     ]
-# )
+        # Initialize data storage
+        self.data1 = np.zeros(1000)  # Buffer for plot1
+        self.x_data2 = np.linspace(0, 2 * np.pi, 1000)  # X-axis for sine wave
+        self.y_data2 = np.sin(self.x_data2)  # Initial sine wave data
+        self.ptr = 0
 
+        # Set up a timer for periodic updates
+        self.timer = pg.QtCore.QTimer()
+        self.timer.timeout.connect(lambda: self.update_plots(obd2Client))
+        self.timer.start(1000)  # Update every 1000ms
 
+    def update_plots(self, obd2Client: OBD2Client):
+        """Update both plots with new data."""
+        # Update Plot 1 with random data
+        self.data1[:-1] = self.data1[1:]  # Shift data left
+        rpm_value, _ = obd2Client.get_rpm()
+        self.data1[-1] = rpm_value # np.random.normal()  # Add a new random value, here to use the client rpm call
+        self.curve1.setData(self.data1)
+
+        # Update Plot 2 with a scrolling sine wave
+        self.ptr += 1
+        self.y_data2 = np.sin(self.x_data2 + 0.1 * self.ptr)  # Shift sine wave
+        self.curve2.setData(self.x_data2, self.y_data2)
 

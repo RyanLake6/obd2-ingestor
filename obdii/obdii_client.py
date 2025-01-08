@@ -116,7 +116,7 @@ class OBD2Client:
         response = self.connection.query(cmd)
 
         if response and not response.is_null():
-            return response.value, response.unit
+            return response.value.magnitude, response.unit
         else:
             print("Failed to get rpm or no data available")
             return None

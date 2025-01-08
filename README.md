@@ -43,3 +43,12 @@ Example:
 - voltage
 - engine error codes
 - RPM / speed?
+
+
+
+Debugging Notes:
+If you hit a `AttributeError: module 'numpy' has no attribute 'cumproduct'. Did you mean: 'cumprod'?`. Then try to uninstall numpy and reisntall less then version 2.0:
+```bash
+pip uninstall numpy
+pip install "numpy<2.0"
+```
