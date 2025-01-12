@@ -8,12 +8,11 @@ from enum import Enum
 class OBDCommand(Enum):
     RPM = obd.commands.RPM
     VOLTAGE = obd.commands.ELM_VOLTAGE
-    OIL_TEMP = obd.commands.OIL_TEMP
+    # OIL_TEMP = obd.commands.OIL_TEMP # this one has none type issues?
     ENGINE_LOAD = obd.commands.ENGINE_LOAD
     FUEL_LEVEL = obd.commands.FUEL_LEVEL
     AMBIENT_AIR_TEMP = obd.commands.AMBIANT_AIR_TEMP
     COOLANT_TEMP = obd.commands.COOLANT_TEMP
-    TIRE_PRESSURE = obd.commands.TIRE_PRESSURE
 
 
 
