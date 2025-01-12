@@ -76,44 +76,14 @@ if __name__ == '__main__':
 
     obd2Client.connect()
 
+    # Test all obd commands in enum
+    for command in OBDCommand:
+        telemetry_value, telemetry_unit = obd2Client.get_telemetry(command)
+        print(f"returning telemetry: {telemetry_value}, {telemetry_unit}")
+
+
     """Use this code block to show a example of pyqt window with fake data for now"""
     # app = QApplication(sys.argv)
     # main_window = PyQtClient(obd2Client)
     # main_window.show()
     # sys.exit(app.exec_())
-
-
-
-    # While running output some rpm values every 3 seconds
-    while True:
-        rpm_data = obd2Client.get_rpm()
-        voltage_data = obd2Client.get_voltage()
-        # oil_temp_data = obd2Client.get_oil_temp()
-        engine_load_data = obd2Client.get_engine_load()
-        fuel_level_data = obd2Client.get_fuel_level()
-        ambient_temp_data = obd2Client.get_ambient_temp()
-        coolant_temp_data = obd2Client.get_coolant_temp()
-        better_rpm_data = obd2Client.get_telemetry(obd.commands.RPM)
-        # better_voltage_data = obd2Client.get_telemetry(OBDCommand.VOLTAGE)
-        if rpm_data:
-            rpm_value, rpm_unit = rpm_data
-            print(f"Current RPM: {rpm_value} {rpm_unit}")
-            voltage_value, voltage_unit = voltage_data
-            print(f"Current voltage: {voltage_value} {voltage_unit}")
-            # oil_temp_value, oil_temp_unit = oil_temp_data
-            # print(f"Current oil temp: {oil_temp_value} {oil_temp_unit}")
-            engine_load_value, engine_load_unit = engine_load_data
-            print(f"Current engine load: {engine_load_value} {engine_load_unit}")
-            fuel_level_value, fuel_level_unit = fuel_level_data
-            print(f"Current fuel level: {fuel_level_value} {fuel_level_unit}")
-            ambient_temp_value, ambient_temp_unit = ambient_temp_data
-            print(f"Current ambient temp: {ambient_temp_value} {ambient_temp_value}")
-            coolant_temp_value, coolant_temp_unit = coolant_temp_data
-            print(f"Current coolant temp: {coolant_temp_value} {coolant_temp_unit}")
-            rpm_value_generic, rpm_unit_generic = better_rpm_data
-            print(f"Current RPM (this is from the generic function with enums): {rpm_value_generic} {rpm_unit_generic}")
-            # voltage_value_generic, voltage_unit_generic = better_voltage_data
-            # print(f"Current voltage (this is from the generic function with enums): {voltage_value_generic} {voltage_unit_generic}")
-        else:
-            print("no rpm data returned")
-        time.sleep(5)
