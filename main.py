@@ -89,15 +89,24 @@ if __name__ == '__main__':
         voltage_data = obd2Client.get_voltage()
         oil_temp_data = obd2Client.get_oil_temp()
         engine_load_data = obd2Client.get_engine_load()
+        fuel_level_data = obd2Client.get_fuel_level()
+        ambient_temp_data = obd2Client.get_ambient_temp()
+        coolant_temp_data = obd2Client.get_coolant_temp()
         if rpm_data:
             rpm_value, rpm_unit = rpm_data
             print(f"Current RPM: {rpm_value} {rpm_unit}")
             voltage_value, voltage_unit = voltage_data
-            print(f"Current RPM: {voltage_value} {voltage_unit}")
+            print(f"Current voltage: {voltage_value} {voltage_unit}")
             oil_temp_value, oil_temp_unit = oil_temp_data
-            print(f"Current RPM: {oil_temp_value} {oil_temp_unit}")
+            print(f"Current oil temp: {oil_temp_value} {oil_temp_unit}")
             engine_load_value, engine_load_unit = engine_load_data
-            print(f"Current RPM: {engine_load_value} {engine_load_unit}")
+            print(f"Current engine load: {engine_load_value} {engine_load_unit}")
+            fuel_level_value, fuel_level_unit = fuel_level_data
+            print(f"Current fuel level: {fuel_level_value} {fuel_level_unit}")
+            ambient_temp_value, ambient_temp_unit = ambient_temp_data
+            print(f"Current ambient temp: {ambient_temp_value} {ambient_temp_value}")
+            coolant_temp_value, coolant_temp_unit = coolant_temp_data
+            print(f"Current coolant temp: {coolant_temp_value} {coolant_temp_unit}")
         else:
             print("no rpm data returned")
         time.sleep(3)

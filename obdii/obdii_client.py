@@ -172,3 +172,54 @@ class OBD2Client:
         else:
             print("Failed to get engine load or no data available")
             return None
+        
+    def get_fuel_level(self) -> tuple[float, str] | None:
+        """Gets the current fuel level as a percent
+        Returns:
+            tuple[float, str] | None: fuel level data tuple of the value and units or None, if nothing is connected or query failed
+        """
+        if not self.connection:
+            print("No connection to OBD-II device.")
+            return None
+        cmd = obd.commands.FUEL_LEVEL
+        response = self.connection.query(cmd)
+
+        if response and not response.is_null():
+            return response.value, response.unit
+        else:
+            print("Failed to get fuel level no data available")
+            return None
+        
+    def get_ambient_temp(self) -> tuple[float, str] | None:
+        """Gets the current ambient air temp
+        Returns:
+            tuple[float, str] | None: ambient air temp data tuple of the value and units or None, if nothing is connected or query failed
+        """
+        if not self.connection:
+            print("No connection to OBD-II device.")
+            return None
+        cmd = obd.commands.AMBIANT_AIR_TEMP
+        response = self.connection.query(cmd)
+
+        if response and not response.is_null():
+            return response.value, response.unit
+        else:
+            print("Failed to get ambient air temp no data available")
+            return None
+        
+    def get_coolant_temp(self) -> tuple[float, str] | None:
+        """Gets the current coolant temp
+        Returns:
+            tuple[float, str] | None: coolant temp data tuple of the value and units or None, if nothing is connected or query failed
+        """
+        if not self.connection:
+            print("No connection to OBD-II device.")
+            return None
+        cmd = obd.commands.COOLANT_TEMP
+        response = self.connection.query(cmd)
+
+        if response and not response.is_null():
+            return response.value, response.unit
+        else:
+            print("Failed to get coolant temp no data available")
+            return None
