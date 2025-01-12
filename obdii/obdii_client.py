@@ -138,3 +138,37 @@ class OBD2Client:
         else:
             print("Failed to get voltage or no data available")
             return None
+        
+    def get_oil_temp(self) -> tuple[float, str] | None:
+        """Gets the current oil temp
+        Returns:
+            tuple[float, str] | None: oil temp data tuple of the value and units or None, if nothing is connected or query failed
+        """
+        if not self.connection:
+            print("No connection to OBD-II device.")
+            return None
+        cmd = obd.commands.OIL_TEMP
+        response = self.connection.query(cmd)
+
+        if response and not response.is_null():
+            return response.value, response.unit
+        else:
+            print("Failed to get oil temp or no data available")
+            return None
+        
+    def get_engine_load(self) -> tuple[float, str] | None:
+        """Gets the current engine load as a percent
+        Returns:
+            tuple[float, str] | None: engine load data tuple of the value and units or None, if nothing is connected or query failed
+        """
+        if not self.connection:
+            print("No connection to OBD-II device.")
+            return None
+        cmd = obd.commands.OIL_TEMP
+        response = self.connection.query(cmd)
+
+        if response and not response.is_null():
+            return response.value, response.unit
+        else:
+            print("Failed to get engine load or no data available")
+            return None

@@ -76,44 +76,28 @@ if __name__ == '__main__':
     obd2Client.connect()
 
     """Use this code block to show a example of pyqt window with fake data for now"""
-    app = QApplication(sys.argv)
-    main_window = PyQtClient(obd2Client)
-    main_window.show()
-    sys.exit(app.exec_())
+    # app = QApplication(sys.argv)
+    # main_window = PyQtClient(obd2Client)
+    # main_window.show()
+    # sys.exit(app.exec_())
 
 
 
     # While running output some rpm values every 3 seconds
-    # while True:
-    #     rpm_data = client.get_rpm()
-    #     if rpm_data:
-    #         rpm_value, rpm_unit = rpm_data
-    #         print(f"Current RPM: {rpm_value} {rpm_unit}")
-    #     else:
-    #         print("no rpm data returned")
-    #     time.sleep(3)
-
-
-    # example of mocked data generation
-    # gui = DashClient()
-    # gui.create_app()
-    # mock_generate_external_data_thread(gui)
-    # gui.run_dash()
-
-    # trying to show real car data:
-    # gui = DashClient()
-    # gui.create_app()
-    # generate_external_data_thread(gui, client)
-    # gui.run_dash()
-
-
-    # example of multiple mocked data plots
-    # gui = DashClient()
-    # gui.create_app()
-    # gui.add_plot("example1", plot_type="line")
-    # gui.add_plot("example2", plot_type="line")
-
-    # gui.update_data("example1", time.time(), random.randint(0,100))
-    # gui.update_data("example2", time.time(), random.randint(0,100))
-
-    # gui.run_dash()
+    while True:
+        rpm_data = obd2Client.get_rpm()
+        voltage_data = obd2Client.get_voltage()
+        oil_temp_data = obd2Client.get_oil_temp()
+        engine_load_data = obd2Client.get_engine_load()
+        if rpm_data:
+            rpm_value, rpm_unit = rpm_data
+            print(f"Current RPM: {rpm_value} {rpm_unit}")
+            voltage_value, voltage_unit = voltage_data
+            print(f"Current RPM: {voltage_value} {voltage_unit}")
+            oil_temp_value, oil_temp_unit = oil_temp_data
+            print(f"Current RPM: {oil_temp_value} {oil_temp_unit}")
+            engine_load_value, engine_load_unit = engine_load_data
+            print(f"Current RPM: {engine_load_value} {engine_load_unit}")
+        else:
+            print("no rpm data returned")
+        time.sleep(3)
