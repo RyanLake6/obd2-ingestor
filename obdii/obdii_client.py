@@ -13,6 +13,7 @@ class OBDCommand(Enum):
     FUEL_LEVEL = obd.commands.FUEL_LEVEL
     AMBIENT_AIR_TEMP = obd.commands.AMBIANT_AIR_TEMP
     COOLANT_TEMP = obd.commands.COOLANT_TEMP
+    TIRE_PRESSURE = obd.commands.TIRE_PRESSURE
 
 
 
