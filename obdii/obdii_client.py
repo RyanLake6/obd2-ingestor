@@ -3,6 +3,19 @@ import subprocess
 import time
 import threading
 
+from enum import Enum
+
+class OBDCommand(Enum):
+    RPM = obd.commands.RPM
+    VOLTAGE = obd.commands.ELM_VOLTAGE
+    OIL_TEMP = obd.commands.OIL_TEMP
+    ENGINE_LOAD = obd.commands.ENGINE_LOAD
+    FUEL_LEVEL = obd.commands.FUEL_LEVEL
+    AMBIENT_AIR_TEMP = obd.commands.AMBIANT_AIR_TEMP
+    COOLANT_TEMP = obd.commands.COOLANT_TEMP
+
+
+
 """
 Class to setup a obd connection to pull live sensor data over an OBD-II connection
 """
@@ -164,7 +177,7 @@ class OBD2Client:
         if not self.connection:
             print("No connection to OBD-II device.")
             return None
-        cmd = obd.commands.OIL_TEMP
+        cmd = obd.commands.ENGINE_LOAD
         response = self.connection.query(cmd)
 
         if response and not response.is_null():
@@ -223,3 +236,20 @@ class OBD2Client:
         else:
             print("Failed to get coolant temp no data available")
             return None
+        
+    def get_telemetry(self, telemetry: OBDCommand) -> tuple[float, str] | None:
+        """Gets the telemetry value requested
+        Returns:
+            tuple[float, str] | None: telemetry data tuple of the value and units or None, if nothing is connected or query failed
+        """
+        if not self.connection:
+            print("No connection to OBD-II device.")
+            return None
+        response = self.connection.query(telemetry)
+
+        if response and not response.is_null():
+            return response.value, response.unit
+        else:
+            print("Failed to get telemetry no data available")
+            return None
+    

@@ -3,7 +3,7 @@ import threading
 import time
 import sys
 
-from obdii.obdii_client import OBD2Client
+from obdii.obdii_client import OBD2Client, OBDCommand
 from gui.app import PyQtClient 
 from PyQt5.QtWidgets import QApplication
 
@@ -92,6 +92,7 @@ if __name__ == '__main__':
         fuel_level_data = obd2Client.get_fuel_level()
         ambient_temp_data = obd2Client.get_ambient_temp()
         coolant_temp_data = obd2Client.get_coolant_temp()
+        better_rpm_data = obd2Client.get_telemetry(OBDCommand.RPM)
         if rpm_data:
             rpm_value, rpm_unit = rpm_data
             print(f"Current RPM: {rpm_value} {rpm_unit}")
@@ -107,6 +108,8 @@ if __name__ == '__main__':
             print(f"Current ambient temp: {ambient_temp_value} {ambient_temp_value}")
             coolant_temp_value, coolant_temp_unit = coolant_temp_data
             print(f"Current coolant temp: {coolant_temp_value} {coolant_temp_unit}")
+            rpm_value_generic, rpm_unit_generic = better_rpm_data
+            print(f"Current RPM (this is from the generic function with enums): {rpm_value_generic} {rpm_unit_generic}")
         else:
             print("no rpm data returned")
-        time.sleep(3)
+        time.sleep(5)
