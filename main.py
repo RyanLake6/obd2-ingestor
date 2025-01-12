@@ -2,6 +2,7 @@ import random
 import threading
 import time
 import sys
+import obd
 
 from obdii.obdii_client import OBD2Client, OBDCommand
 from gui.app import PyQtClient 
@@ -87,19 +88,20 @@ if __name__ == '__main__':
     while True:
         rpm_data = obd2Client.get_rpm()
         voltage_data = obd2Client.get_voltage()
-        oil_temp_data = obd2Client.get_oil_temp()
+        # oil_temp_data = obd2Client.get_oil_temp()
         engine_load_data = obd2Client.get_engine_load()
         fuel_level_data = obd2Client.get_fuel_level()
         ambient_temp_data = obd2Client.get_ambient_temp()
         coolant_temp_data = obd2Client.get_coolant_temp()
-        better_rpm_data = obd2Client.get_telemetry(OBDCommand.RPM)
+        better_rpm_data = obd2Client.get_telemetry(obd.commands.RPM)
+        # better_voltage_data = obd2Client.get_telemetry(OBDCommand.VOLTAGE)
         if rpm_data:
             rpm_value, rpm_unit = rpm_data
             print(f"Current RPM: {rpm_value} {rpm_unit}")
             voltage_value, voltage_unit = voltage_data
             print(f"Current voltage: {voltage_value} {voltage_unit}")
-            oil_temp_value, oil_temp_unit = oil_temp_data
-            print(f"Current oil temp: {oil_temp_value} {oil_temp_unit}")
+            # oil_temp_value, oil_temp_unit = oil_temp_data
+            # print(f"Current oil temp: {oil_temp_value} {oil_temp_unit}")
             engine_load_value, engine_load_unit = engine_load_data
             print(f"Current engine load: {engine_load_value} {engine_load_unit}")
             fuel_level_value, fuel_level_unit = fuel_level_data
@@ -110,6 +112,8 @@ if __name__ == '__main__':
             print(f"Current coolant temp: {coolant_temp_value} {coolant_temp_unit}")
             rpm_value_generic, rpm_unit_generic = better_rpm_data
             print(f"Current RPM (this is from the generic function with enums): {rpm_value_generic} {rpm_unit_generic}")
+            # voltage_value_generic, voltage_unit_generic = better_voltage_data
+            # print(f"Current voltage (this is from the generic function with enums): {voltage_value_generic} {voltage_unit_generic}")
         else:
             print("no rpm data returned")
         time.sleep(5)

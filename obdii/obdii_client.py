@@ -147,7 +147,7 @@ class OBD2Client:
         response = self.connection.query(cmd)
 
         if response and not response.is_null():
-            return response.value, response.unit
+            return response.value.magnitude, response.unit
         else:
             print("Failed to get voltage or no data available")
             return None
@@ -164,7 +164,7 @@ class OBD2Client:
         response = self.connection.query(cmd)
 
         if response and not response.is_null():
-            return response.value, response.unit
+            return response.value.magnitude, response.unit
         else:
             print("Failed to get oil temp or no data available")
             return None
@@ -181,7 +181,7 @@ class OBD2Client:
         response = self.connection.query(cmd)
 
         if response and not response.is_null():
-            return response.value, response.unit
+            return response.value.magnitude, response.unit
         else:
             print("Failed to get engine load or no data available")
             return None
@@ -198,7 +198,7 @@ class OBD2Client:
         response = self.connection.query(cmd)
 
         if response and not response.is_null():
-            return response.value, response.unit
+            return response.value.magnitude, response.unit
         else:
             print("Failed to get fuel level no data available")
             return None
@@ -215,7 +215,7 @@ class OBD2Client:
         response = self.connection.query(cmd)
 
         if response and not response.is_null():
-            return response.value, response.unit
+            return response.value.magnitude, response.unit
         else:
             print("Failed to get ambient air temp no data available")
             return None
@@ -232,12 +232,12 @@ class OBD2Client:
         response = self.connection.query(cmd)
 
         if response and not response.is_null():
-            return response.value, response.unit
+            return response.value.magnitude, response.unit
         else:
             print("Failed to get coolant temp no data available")
             return None
         
-    def get_telemetry(self, telemetry: OBDCommand) -> tuple[float, str] | None:
+    def get_telemetry(self, telemetry) -> tuple[float, str] | None:
         """Gets the telemetry value requested
         Returns:
             tuple[float, str] | None: telemetry data tuple of the value and units or None, if nothing is connected or query failed
@@ -245,10 +245,11 @@ class OBD2Client:
         if not self.connection:
             print("No connection to OBD-II device.")
             return None
+        # telemetry = obd.commands.RPM
         response = self.connection.query(telemetry)
 
         if response and not response.is_null():
-            return response.value, response.unit
+            return response.value.magnitude, response.unit
         else:
             print("Failed to get telemetry no data available")
             return None
