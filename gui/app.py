@@ -5,13 +5,16 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QHBoxLayout,
 from PyQt5.QtCore import Qt
 import random
 
+from obdii.obdii_client import OBD2Client, OBDCommand
+
 
 class PyQtClient(QMainWindow):
-    def __init__(self, parent=None):
+    def __init__(self, obd2Client: OBD2Client, parent=None):
         super().__init__(parent)
         self.setWindowFlags(Qt.FramelessWindowHint)
         self.setWindowTitle("OBD-II Telemetry")
         self.resize(800, 600)
+        self.obd2Client = obd2Client
 
         # Create a central widget and layout
         self.central_widget = QWidget(self)
@@ -64,7 +67,8 @@ class PyQtClient(QMainWindow):
         """Update both plots and labels with simulated data."""
         # Update RPM plot with random data between 500 and 7000
         self.data1[:-1] = self.data1[1:]  # Shift data left
-        rpm_value = random.randint(500, 7000)  # Random RPM value
+        # rpm_value = random.randint(500, 7000)  # Random RPM value
+        rpm_value = self.obd2Client.get_telemetry(OBDCommand.RPM)
         self.data1[-1] = rpm_value  # Add a new RPM value
         self.curve1.setData(self.data1)
 

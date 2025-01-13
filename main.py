@@ -29,6 +29,6 @@ if __name__ == '__main__':
 
     """Use this code block to show a example of pyqt window with fake data for now"""
     app = QApplication(sys.argv)
-    main_window = PyQtClient()
+    main_window = PyQtClient(obd2Client)
     main_window.show()
     sys.exit(app.exec_())
