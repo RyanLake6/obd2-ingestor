@@ -44,6 +44,9 @@ class PyQtClient(QMainWindow):
         self.plot1 = self.graph_layout.addPlot(title="RPM")
         self.curve1 = self.plot1.plot(pen=pg.mkPen(color='y', width=2))
 
+        self.plot2 = self.graph_layout.addPlot(title="RPM 2")
+        self.curve2 = self.plot2.plot(pen=pg.mkPen(color='y', width=2))
+
         # Initialize data storage for the plots
         self.data1 = np.zeros(100)  # Buffer for RPM plot
         self.data2 = np.zeros(100)  # Buffer for Engine Load plot
@@ -68,7 +71,7 @@ class PyQtClient(QMainWindow):
         self.data2[:-1] = self.data2[1:]  # Shift data left
         voltage_value = random.uniform(0, 100)  # Random Engine Load value
         self.data2[-1] = voltage_value  # Add a new Engine Load value
-        # self.curve2.setData(self.data2)
+        self.curve2.setData(self.data2)
 
         # Update Fuel Level plot with random data between 0 and 100
         self.data3[:-1] = self.data3[1:]  # Shift data left
@@ -84,7 +87,7 @@ class PyQtClient(QMainWindow):
 
         # Update labels with latest random values
         self.rpm_label.setText(f"RPM: {rpm_value}")
-        self.voltage_label.setText(f"Voltage: {voltage_value:.2f}%")
+        self.voltage_label.setText(f"Voltage: {voltage_value:.2f}")
         self.fuel_level_label.setText(f"Fuel Level: {fuel_level_value:.2f}%")
         self.ambient_air_label.setText(f"Outside Temp: {ambient_air_value:.2f}\u00B0 C")
 
