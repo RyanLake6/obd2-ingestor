@@ -44,6 +44,8 @@ Example:
 - engine error codes
 - RPM / speed?
 
+## Drawbacks:
+It seems the `OIL_TEMP` is not supported by my obd device and/or car. Tire pressure also doesn't possible out of the box. It might be possible if I find the direct PID but I have not been able to get this to work yet.
 
 
 Debugging Notes:
