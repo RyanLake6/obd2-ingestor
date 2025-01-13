@@ -29,12 +29,9 @@ Example:
 - Connect to the OBDII wifi
 - Run: `python3 main.py`
 
-## TODO
-- make sudo for the virtualization not take in a user defined password
-- Make a requirements and auto pip install setup script
-- pass in the obd2 client to the dash app
-    - set up so that there's a default ui then maybe a way to customize?
-    - maybe just make a json that gets pulled in and then comment out other guages / other stuff
+## Future Considerations:
+- view rpi temp (possible shutoff if too hot)
+- show engine diagnostics codes if they are there
 
 ## Planned guages:
 - tire pressure

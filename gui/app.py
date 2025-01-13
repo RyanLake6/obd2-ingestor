@@ -21,17 +21,17 @@ class PyQtClient(QMainWindow):
         # Create a horizontal layout for the labels
         labels_layout = QHBoxLayout()
 
-        # Create labels for displaying up-to-date values
+        # Create labels for displaying single values
         self.rpm_label = QLabel("RPM: --", self)
-        self.voltage_label = QLabel("Voltage: --", self)
         self.fuel_level_label = QLabel("Fuel Level: --", self)
         self.ambient_air_label = QLabel("Outside Temp: --", self)
+        self.voltage_label = QLabel("Voltage: --", self)
 
         # Add labels to the horizontal layout
         labels_layout.addWidget(self.rpm_label)
-        labels_layout.addWidget(self.voltage_label)
         labels_layout.addWidget(self.fuel_level_label)
         labels_layout.addWidget(self.ambient_air_label)
+        labels_layout.addWidget(self.voltage_label)
 
         # Add the horizontal layout with labels at the top of the window
         layout.addLayout(labels_layout)
@@ -40,11 +40,11 @@ class PyQtClient(QMainWindow):
         self.graph_layout = pg.GraphicsLayoutWidget()
         layout.addWidget(self.graph_layout)
 
-        # Add multiple plots to the layout
+        # Adding live plots
         self.plot1 = self.graph_layout.addPlot(title="RPM")
         self.curve1 = self.plot1.plot(pen=pg.mkPen(color='y', width=2))
 
-        self.plot2 = self.graph_layout.addPlot(title="RPM 2")
+        self.plot2 = self.graph_layout.addPlot(title="Engine Load")
         self.curve2 = self.plot2.plot(pen=pg.mkPen(color='y', width=2))
 
         # Initialize data storage for the plots
@@ -52,6 +52,7 @@ class PyQtClient(QMainWindow):
         self.data2 = np.zeros(100)  # Buffer for Engine Load plot
         self.data3 = np.zeros(100)  # Buffer for Fuel Level plot
         self.data4 = np.zeros(100)  # Buffer for ambient air label
+        self.data5 = np.zeros(100)  # Buffer for voltage plot
         self.ptr = 0
 
         # Set up a timer for periodic updates
@@ -69,37 +70,30 @@ class PyQtClient(QMainWindow):
 
         # Update Engine Load plot with random data between 0 and 100
         self.data2[:-1] = self.data2[1:]  # Shift data left
-        voltage_value = random.uniform(0, 100)  # Random Engine Load value
-        self.data2[-1] = voltage_value  # Add a new Engine Load value
+        engine_load_value = random.uniform(0, 100)  # Random Engine Load value
+        self.data2[-1] = engine_load_value  # Add a new Engine Load value
         self.curve2.setData(self.data2)
 
-        # Update Fuel Level plot with random data between 0 and 100
+        # Update Fuel Level value with random data between 0 and 100
         self.data3[:-1] = self.data3[1:]  # Shift data left
         fuel_level_value = random.uniform(0, 100)  # Random Fuel Level value
         self.data3[-1] = fuel_level_value  # Add a new Fuel Level value
-        # self.curve3.setData(self.data3)
 
-        # Update ambient air plot with random data between 0 and 100
+        # Update ambient air value with random data between 0 and 100
         self.data4[:-1] = self.data4[1:]  # Shift data left
         ambient_air_value = random.uniform(0, 100)  # Random Fuel Level value
         self.data4[-1] = ambient_air_value  # Add a new Fuel Level value
-        # self.curve4.setData(self.data4)
+
+        # Update voltage value with random data between 0 and 100
+        self.data5[:-1] = self.data5[1:]  # Shift data left
+        voltage_value = random.uniform(0, 100)  # Random Engine Load value
+        self.data5[-1] = voltage_value  # Add a new Engine Load value
 
         # Update labels with latest random values
         self.rpm_label.setText(f"RPM: {rpm_value}")
-        self.voltage_label.setText(f"Voltage: {voltage_value:.2f}")
         self.fuel_level_label.setText(f"Fuel Level: {fuel_level_value:.2f}%")
         self.ambient_air_label.setText(f"Outside Temp: {ambient_air_value:.2f}\u00B0 C")
+        self.voltage_label.setText(f"Voltage: {voltage_value:.2f}")
 
     def show(self):
         super().showFullScreen()
-
-
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-
-    # Initialize the PyQtClient without the OBD2Client (using random data)
-    window = PyQtClient()
-    window.show()
-
-    sys.exit(app.exec_())
