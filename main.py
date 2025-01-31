@@ -16,7 +16,7 @@ if __name__ == '__main__':
     print("Awaiting for OBD-II client to intialize")
     while not obd2Client.connected:
         time.sleep(3)
-        print("awaiting...")
+        print("awaiting OBD-II connection...")
     print("Initialized OBD-II device, connecting...")
 
     obd2Client.connect()

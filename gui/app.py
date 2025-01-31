@@ -68,7 +68,7 @@ class PyQtClient(QMainWindow):
         # Update RPM plot with random data between 500 and 7000
         self.data1[:-1] = self.data1[1:]  # Shift data left
         # rpm_value = random.randint(500, 7000)  # Random RPM value
-        rpm_value = self.obd2Client.get_telemetry(OBDCommand.RPM)
+        rpm_value, _ = self.obd2Client.get_telemetry(OBDCommand.RPM)
         self.data1[-1] = rpm_value  # Add a new RPM value
         self.curve1.setData(self.data1)
 
