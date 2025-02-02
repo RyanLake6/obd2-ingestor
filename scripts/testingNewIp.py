@@ -16,20 +16,3 @@ if connection.is_connected():
     else:
         print("Failed to retrieve Engine RPM. The response was not successful.")
 
-# ps aux | grep socat
-# sudo socat pty,link=/dev/ttyUSB0,waitslave tcp:192.168.0.10:35000 &
-# ls -l /dev/ttyUSB0
-# nc -zv 192.168.0.10 35000
-# sudo socat -d -d pty,link=/dev/ttyUSB0,waitslave tcp:192.168.0.10:35000
-# ls -l /dev/ttyUSB0
-    # serial_port = "/dev/pts/3"
-# sudo chmod 666 /dev/pts/6
-
-
-
-"""
-Steps to run this atm:
-sudo socat -d -d pty,link=/dev/ttyUSB0,waitslave tcp:192.168.0.10:35000&
-sudo chmod 666 /dev/ttyUSB0
-python3 scripts/testingNewIp.py 
-"""

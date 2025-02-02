@@ -2,50 +2,56 @@
 
 This project is to explore the extraction of taking the time series data from a OBD2 sensor in a vehicle
 
-## Setup
+## Quick Start
 
-### Helper scripts to find obd2 connection
-
-All obd2 sensors are different ips and ports and often needs some debugging to find how to connect to yours. Make sure to do these tests with your car in at least accessory mode
-
-### Setup Venv:
-
+### Setup Venv
 ```bash
 python3 -m venv venv
 source venv/bin/activate
 ```
 
-### Allowing sudo commands
+### Allowing Sudo
 The script needs access to run sudo commands if you are virtualizing a wifi connected OBD-II. Follow these steps if necessary:
-Run both of the following: `which chmod` and `which socat`
-Then `sudo visudo`
-and place the following line in the file:
-`<username> ALL=(ALL) NOPASSWD: <output-from-which-socat>, <output-from-which-chmod>`
-Example:
-`user ALL=(ALL) NOPASSWD: /usr/bin/socat, /usr/bin/chmod`
+Run both of the following: 
+```bash
+# fetch where chmod / socat commands are stored
+which chmod
+which socat
+
+# open file for editing
+sudo visudo
+
+# add the following line to the bottom
+<username> ALL=(ALL) NOPASSWD: <output-from-which-socat>, <output-from-which-chmod>
+
+# e.g.
+user ALL=(ALL) NOPASSWD: /usr/bin/socat, /usr/bin/chmod
+```
 
 
-### Running the gui
-- Connect to the OBDII wifi
-- Run: `python3 main.py`
+### Run OBD-II Ingestor
+
+```bash
+# Connect to the OBDII wifi
+
+# Run:
+python3 main.py
+
+# Optionally for more details / flags:
+python3 main.py --help
+```
 
 ## Future Considerations:
-- view rpi temp (possible shutoff if too hot)
-- show engine diagnostics codes if they are there
-
-## Planned guages:
-- tire pressure
-- engine temp
-- oil temp
-- voltage
-- engine error codes
-- RPM / speed?
+- Fetch rpi temp and shutoff if too hot (It's currently winter so not too worried about this)
+- Show engine diagnostics codes if they are there
+- Storing metric data locally - possibly upload to long term server storage
+- Fetch tire pressure. This would involve an rf module and decoder which I don't feel like adding all that extra tech on my dashboard for now
 
 ## Drawbacks:
-It seems the `OIL_TEMP` is not supported by my obd device and/or car. Tire pressure also doesn't possible out of the box. It might be possible if I find the direct PID but I have not been able to get this to work yet.
+It seems the `OIL_TEMP` is not supported by my obd device and/or car. Tire pressure also isn't possible out of the box.
 
 
-Debugging Notes:
+## Debugging Notes:
 If you hit a `AttributeError: module 'numpy' has no attribute 'cumproduct'. Did you mean: 'cumprod'?`. Then try to uninstall numpy and reisntall less then version 2.0:
 ```bash
 pip uninstall numpy

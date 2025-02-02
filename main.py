@@ -1,16 +1,19 @@
-import random
-import threading
 import time
 import sys
-import obd
+import argparse
 
-from obdii.obdii_client import OBD2Client, OBDCommand
+from obdii.obdii_client import OBD2Client
 from gui.app import PyQtClient 
 from PyQt5.QtWidgets import QApplication
 
 
 if __name__ == '__main__':
-    """Use this code block to setup the pulling of data from the obd2 device"""
+    """Parse argument flags"""
+    parser = argparse.ArgumentParser(description="OBD-II Ingestory with display")
+    parser.add_argument("-d", "--debug", action="store_true", help="Enable debug mode")
+    args = parser.parse_args()
+
+    """Build OBD-II Connection"""
     obd2Client = OBD2Client("192.168.0.10", port=3500, baudrate=38400, debug=True)
 
     print("Awaiting for OBD-II client to intialize")
@@ -26,9 +29,8 @@ if __name__ == '__main__':
     #     telemetry_value, telemetry_unit = obd2Client.get_telemetry(command)
     #     print(f"returning telemetry: {telemetry_value}, {telemetry_unit}")
 
-
-    """Use this code block to show a example of pyqt window with fake data for now"""
+    """Startup GUI"""
     app = QApplication(sys.argv)
-    main_window = PyQtClient(obd2Client)
+    main_window = PyQtClient(obd2Client, debug_mode=args.debug)
     main_window.show()
     sys.exit(app.exec_())
