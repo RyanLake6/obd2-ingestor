@@ -3,6 +3,17 @@ import subprocess
 import time
 import threading
 
+from enum import Enum
+
+class OBDCommand(Enum):
+    RPM = obd.commands.RPM
+    VOLTAGE = obd.commands.ELM_VOLTAGE
+    # OIL_TEMP = obd.commands.OIL_TEMP # Unable to pull this data from my car computer / scanner
+    ENGINE_LOAD = obd.commands.ENGINE_LOAD
+    FUEL_LEVEL = obd.commands.FUEL_LEVEL
+    AMBIENT_AIR_TEMP = obd.commands.AMBIANT_AIR_TEMP
+    COOLANT_TEMP = obd.commands.COOLANT_TEMP
+
 """
 Class to setup a obd connection to pull live sensor data over an OBD-II connection
 """
@@ -38,19 +49,17 @@ class OBD2Client:
         print("Starting virtualize connection in a seperate thread")
         thread = threading.Thread(target=self.virtualize_connection, daemon=True)
         thread.start()
-        print("running virtualize connection in a another thread")
+        print("Virtualized connection in a another thread")
 
     def virtualize_connection(self):
         """Virtualizes a wifi connection to be serial"""
 
-        # Define the socat command
         socat_command = [
             "sudo", "socat", "-d", "-d",
             "pty,link=/dev/ttyUSB0,waitslave",
             "tcp:192.168.0.10:35000"
         ]
 
-        # Define the chmod command
         chmod_command = ["sudo", "chmod", "666", "/dev/ttyUSB0"]
 
         # Start the socat command in a separate process
@@ -60,34 +69,20 @@ class OBD2Client:
             stderr=subprocess.PIPE,
         )
 
-        print(f"Socat process started with PID: {process.pid}")
+        print(f"Started virtual serial port with PID: {process.pid}")
 
         try:
             # Wait briefly to ensure the /dev/ttyUSB0 device is created
             time.sleep(3)
 
-            # Run the chmod command while socat is running
-            print("Running chmod command...")
+            # Make sure we have the correct permission on the serial port
+            print("Changing serial port permissions...")
             subprocess.run(chmod_command, check=True)
             print("Permissions updated successfully.")
 
             self.connected = True
-
-            # # Optional: Read the socat output 
-            # while True:
-            #     output = process.stdout.readline()
-            #     error = process.stderr.readline()
-
-            #     if output:
-            #         print(f"Socat STDOUT: {output.decode().strip()}")
-            #     if error:
-            #         print(f"Socat STDERR: {error.decode().strip()}")
-                
-            #     # Check if socat has exited
-            #     if process.poll() is not None:
-            #         break
         except KeyboardInterrupt:
-            print("Stopping socat process...")
+            print("Killing socat process...")
             process.terminate()
             process.wait()  # Ensure the process has stopped
 
@@ -102,39 +97,27 @@ class OBD2Client:
         connection = obd.OBD(self.serial_port, baudrate=self.baudrate)
         self.connection = connection
 
+    def get_telemetry(self, telemetry: OBDCommand) -> tuple[float, str] | None:
+        """Fetch the requested telemetry data from obd
 
-    def get_rpm(self) -> tuple[float, str] | None:
-        """Gets the current RPM
+        Args:
+            telemetry (OBDCommand): The obd command to pull from the OBDII sensor
 
         Returns:
-            tuple[float, str] | None: rpm data tuple of the value and units or None, if nothing is connected or query failed
+            tuple[float, str] | None: A tuple of the value and unit of the telemetry field
         """
         if not self.connection:
             print("No connection to OBD-II device.")
-            return None
-        cmd = obd.commands.RPM
-        response = self.connection.query(cmd)
-
-        if response and not response.is_null():
-            return response.value, response.unit
-        else:
-            print("Failed to get rpm or no data available")
             return None
         
-    def get_voltage(self) -> tuple[float, str] | None:
-        """Gets the current voltage
+        if isinstance(telemetry, Enum):
+            telemetry = telemetry.value
 
-        Returns:
-            tuple[float, str] | None: voltage data tuple of the value and units or None, if nothing is connected or query failed
-        """
-        if not self.connection:
-            print("No connection to OBD-II device.")
-            return None
-        cmd = obd.commands.ELM_VOLTAGE
-        response = self.connection.query(cmd)
+        response = self.connection.query(telemetry)
 
         if response and not response.is_null():
-            return response.value, response.unit
+            return response.value.magnitude, response.unit
         else:
-            print("Failed to get voltage or no data available")
+            print("Failed to get telemetry no data available")
             return None
+    

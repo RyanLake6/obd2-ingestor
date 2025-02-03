@@ -1,101 +1,36 @@
-import random
-import threading
 import time
+import sys
+import argparse
 
 from obdii.obdii_client import OBD2Client
-from gui.app import DashClient 
-from pint import UnitRegistry
-
-
-def mock_generate_external_data_thread(dash_client):
-    """Start generate_external_data in a seperate thread
-
-    Args:
-        dash_client (DashClient): dash client class for gui
-    """
-    data_thread = threading.Thread(target=mock_generate_external_data, args=(dash_client,), daemon=True)
-    data_thread.start()
-
-
-def mock_generate_external_data(dash_client):
-    """sends data for dash gui to display
-
-    Args:
-        dash_client (DashClient): dash client class for gui
-    """
-    while True:
-        new_x = time.time()
-        new_y = random.randint(0, 5)
-        dash_client.update_data(new_x, new_y)
-        time.sleep(1)  # Simulate data coming every second
-
-
-
-def generate_external_data_thread(dash_client, obd2client):
-    """Start generate_external_data in a seperate thread
-
-    Args:
-        dash_client (DashClient): dash client class for gui
-    """
-    data_thread = threading.Thread(target=generate_external_data, args=(dash_client,obd2client,), daemon=True)
-    data_thread.start()
-
-
-def generate_external_data(dash_client, obd2client):
-    """sends data for dash gui to display
-
-    Args:
-        dash_client (DashClient): dash client class for gui
-    """
-    while True:
-        rpm_data = obd2client.get_rpm()
-        if rpm_data:
-            rpm_value, rpm_unit = rpm_data
-            print(f"Current rpm: {rpm_value.magnitude} and value: {rpm_unit}")
-            print(f"the type of hte rpm value is: {type(rpm_value)}")
-            new_x = time.time()
-            new_y = rpm_value.magnitude
-            dash_client.update_data(new_x, new_y)
-        else:
-            print("no rpm data returned")
-        time.sleep(3)
+from gui.app import PyQtClient 
+from PyQt5.QtWidgets import QApplication
 
 
 if __name__ == '__main__':
-    client = OBD2Client("192.168.0.10", port=3500, baudrate=38400, debug=True)
+    """Parse argument flags"""
+    parser = argparse.ArgumentParser(description="OBD-II Ingestory with display")
+    parser.add_argument("-d", "--debug", action="store_true", help="Enable debug mode")
+    args = parser.parse_args()
 
-    print("Awaiting for OBD-II client to intialize", end="")
-    while not client.connected:
-        print(".", end="")
-        time.sleep(.5)
-    print("\nInitialized OBD-II device, connecting...")
+    """Build OBD-II Connection"""
+    obd2Client = OBD2Client("192.168.0.10", port=3500, baudrate=38400, debug=True)
 
-    # print("sleeping until socat process is started in other thread")
-    # time.sleep(8)
-    # print("attempting to connect to OBD-II device")
+    print("Awaiting for OBD-II client to intialize")
+    while not obd2Client.connected:
+        time.sleep(3)
+        print("awaiting OBD-II connection...")
+    print("Initialized OBD-II device, connecting...")
 
-    client.connect()
+    obd2Client.connect()
 
+    # # Test all obd commands in enum
+    # for command in OBDCommand:
+    #     telemetry_value, telemetry_unit = obd2Client.get_telemetry(command)
+    #     print(f"returning telemetry: {telemetry_value}, {telemetry_unit}")
 
-    # While running output some rpm values every 3 seconds
-    # while True:
-    #     rpm_data = client.get_rpm()
-    #     if rpm_data:
-    #         rpm_value, rpm_unit = rpm_data
-    #         print(f"Current RPM: {rpm_value} {rpm_unit}")
-    #     else:
-    #         print("no rpm data returned")
-    #     time.sleep(3)
-
-
-    # example of mocked data generation
-    # gui = DashClient()
-    # gui.create_app()
-    # mock_generate_external_data_thread(gui)
-    # gui.run_dash()
-
-    # trying to show real car data:
-    gui = DashClient()
-    gui.create_app()
-    generate_external_data_thread(gui, client)
-    gui.run_dash()
+    """Startup GUI"""
+    app = QApplication(sys.argv)
+    main_window = PyQtClient(obd2Client, debug_mode=args.debug)
+    main_window.show()
+    sys.exit(app.exec_())

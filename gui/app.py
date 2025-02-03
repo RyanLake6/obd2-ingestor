@@ -1,99 +1,122 @@
-import dash
-from dash import dcc, html
-from dash.dependencies import Input, Output, State
-import plotly.graph_objs as go
-import time
+import sys
+import numpy as np
+import pyqtgraph as pg
+from PyQt5.QtWidgets import QMainWindow, QVBoxLayout, QHBoxLayout, QWidget, QLabel
+from PyQt5.QtCore import Qt
 import random
 
-class DashClient:
-    def __init__(self):
-        self.app = None
-        self.x_data = []
-        self.y_data = []
-    
-    def create_app(self):
-        self.app = dash.Dash(__name__)
-
-        # Define the layout of the app
-        self.app.layout = html.Div(
-            children=[
-                html.H1("Real-Time Plotly Update Example"),
-                dcc.Graph(id="live-update-graph"),
-                dcc.Store(id="x_data_store", data=[]),  # Store for x_data
-                dcc.Store(id="y_data_store", data=[]),  # Store for y_data
-                dcc.Interval(
-                    id="interval-component",
-                    interval=1000,  # Update every 1000 ms (1 second)
-                    n_intervals=0
-                ),
-            ]
-        )
-
-        # Define callback to update the plot and store data
-        @self.app.callback(
-            Output("live-update-graph", "figure"),
-            Output("x_data_store", "data"),  # Output updated x_data
-            Output("y_data_store", "data"),  # Output updated y_data
-            Input("interval-component", "n_intervals"),
-            State("x_data_store", "data"),  # Get the current stored x_data
-            State("y_data_store", "data"),  # Get the current stored y_data
-        )
-
-        def update_plot(n, x_data, y_data):
-            # Simulate new data (e.g., from a sensor or real-time data source)
-            # new_x = time.time()
-            # new_y = random.randint(0, 100)
-
-            # Append new data
-            if self.x_data and self.y_data:
-                x_data = self.x_data
-                y_data = self.y_data
-
-            # Only keep the last 50 data points to avoid overcrowding the plot
-            x_data = x_data[-50:]
-            y_data = y_data[-50:]
-
-            # Create the plot
-            figure = {
-                "data": [go.Scatter(x=x_data, y=y_data, mode="lines+markers")],
-                "layout": go.Layout(
-                    title="Live Data Update",
-                    xaxis={"title": "Time", "rangeslider": {"visible": True}},
-                    yaxis={"title": "Value"},
-                    plot_bgcolor='#121212',  # Set the plot background to dark
-                    paper_bgcolor='#121212',
-                ),
-            }
-
-            return figure, x_data, y_data  # Return updated figure and data
+from obdii.obdii_client import OBD2Client, OBDCommand
 
 
-    def update_data(self, new_x, new_y):
-        """Method to update the plot data from outside the class"""
-        self.x_data.append(new_x)
-        self.y_data.append(new_y)
+class PyQtClient(QMainWindow):
+    def __init__(self, obd2Client: OBD2Client, parent=None, debug_mode=False):
+        if debug_mode:
+            print("debug mode - mocking all data produced")
 
-    def run_dash(self):
-        self.app.run_server(debug=True)
+        super().__init__(parent)
+        self.setWindowFlags(Qt.FramelessWindowHint)
+        self.setWindowTitle("OBD-II Telemetry")
+        self.resize(800, 600)
+        self.debug_mode = debug_mode
+        self.obd2Client = obd2Client
 
+        # Create a central widget and layout
+        self.central_widget = QWidget(self)
+        self.setCentralWidget(self.central_widget)
+        layout = QVBoxLayout(self.central_widget)
 
-# # Create a Dash app
-# app = dash.Dash(__name__)
+        # Create a horizontal layout for the labels
+        labels_layout = QHBoxLayout()
 
-# # Define the layout of the app
-# app.layout = html.Div(
-#     children=[
-#         html.H1("Real-Time Plotly Update Example"),
-#         dcc.Graph(id="live-update-graph"),
-#         dcc.Store(id="x_data_store", data=[]),  # Store for x_data
-#         dcc.Store(id="y_data_store", data=[]),  # Store for y_data
-#         dcc.Interval(
-#             id="interval-component",
-#             interval=1000,  # Update every 1000 ms (1 second)
-#             n_intervals=0
-#         ),
-#     ]
-# )
+        # Create labels for displaying single values
+        self.rpm_label = QLabel("RPM: --", self)
+        self.fuel_level_label = QLabel("Fuel Level: --", self)
+        self.ambient_air_label = QLabel("Outside Temp: --", self)
+        self.voltage_label = QLabel("Voltage: --", self)
 
+        # Add labels to the horizontal layout
+        labels_layout.addWidget(self.rpm_label)
+        labels_layout.addWidget(self.fuel_level_label)
+        labels_layout.addWidget(self.ambient_air_label)
+        labels_layout.addWidget(self.voltage_label)
 
+        # Add the horizontal layout with labels at the top of the window
+        layout.addLayout(labels_layout)
 
+        # Create a central GraphicsLayoutWidget for multiple plots
+        self.graph_layout = pg.GraphicsLayoutWidget()
+        layout.addWidget(self.graph_layout)
+
+        # Adding live plots
+        self.plot1 = self.graph_layout.addPlot(title="RPM")
+        self.curve1 = self.plot1.plot(pen=pg.mkPen(color='y', width=2))
+
+        self.plot2 = self.graph_layout.addPlot(title="Engine Load")
+        self.curve2 = self.plot2.plot(pen=pg.mkPen(color='y', width=2))
+
+        # Initialize data storage for the plots
+        self.data1 = np.zeros(100)  # Buffer for RPM plot
+        self.data2 = np.zeros(100)  # Buffer for Engine Load plot
+        self.data3 = np.zeros(100)  # Buffer for Fuel Level plot
+        self.data4 = np.zeros(100)  # Buffer for ambient air label
+        self.data5 = np.zeros(100)  # Buffer for voltage plot
+        self.ptr = 0
+
+        # Set up a timer for periodic updates
+        self.timer = pg.QtCore.QTimer()
+        self.timer.timeout.connect(self.update_plots)
+        self.timer.start(1000)  # Update every 1000ms
+
+    def update_plots(self):
+        """Update both plots and labels with simulated data."""
+        # Update RPM plot
+        self.data1[:-1] = self.data1[1:]
+        if self.debug_mode:
+            rpm_value = random.randint(500, 7000)
+        else:
+            rpm_value, _ = self.obd2Client.get_telemetry(OBDCommand.RPM)
+        self.data1[-1] = rpm_value
+        self.curve1.setData(self.data1)
+
+        # Update Engine Load plot
+        self.data2[:-1] = self.data2[1:]  
+        if self.debug_mode:
+            engine_load_value = random.uniform(0, 100)
+        else:
+            engine_load_value, _ = self.obd2Client.get_telemetry(OBDCommand.ENGINE_LOAD)
+        self.data2[-1] = engine_load_value
+        self.curve2.setData(self.data2)
+
+        # Update Fuel Level value
+        self.data3[:-1] = self.data3[1:]  
+        if self.debug_mode:
+            fuel_level_value = random.uniform(0, 100)
+        else:
+            fuel_level_value, _ = self.obd2Client.get_telemetry(OBDCommand.FUEL_LEVEL)
+        self.data3[-1] = fuel_level_value
+
+        # Update ambient air value
+        self.data4[:-1] = self.data4[1:]
+        if self.debug_mode:
+            ambient_air_value = random.uniform(0, 100)
+        else:
+            ambient_air_value, _ = self.obd2Client.get_telemetry(OBDCommand.AMBIENT_AIR_TEMP)
+        ambient_air_value_fahrenheit = (ambient_air_value * 9/5) + 32
+        self.data4[-1] = ambient_air_value_fahrenheit
+
+        # Update voltage value
+        self.data5[:-1] = self.data5[1:]  
+        if self.debug_mode:
+            voltage_value = random.uniform(0, 100)  # Random Engine Load value
+        else:
+            voltage_value, _ = self.obd2Client.get_telemetry(OBDCommand.VOLTAGE)
+        self.data5[-1] = voltage_value
+
+        # Update labels with latest values
+        self.rpm_label.setText(f"RPM: {rpm_value}")
+        self.fuel_level_label.setText(f"Fuel Level: {fuel_level_value:.2f}%")
+        self.ambient_air_label.setText(f"Outside Temp: {ambient_air_value_fahrenheit:.2f}\u00B0 C")
+        self.voltage_label.setText(f"Voltage: {voltage_value:.2f}")
+
+    def show(self):
+        super().showFullScreen()
